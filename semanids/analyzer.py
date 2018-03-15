@@ -2,6 +2,7 @@ import collections
 import time
 import bisect
 from operator import itemgetter
+import logging
 
 class Analyzer:
 
@@ -14,16 +15,18 @@ class Analyzer:
 
 	# adds an entry to the buffer
 	def appendentry(self, data):
+		logging.info("Adding to buffer")
 		self.buffer.append((getattr(data, "timestamp"),getattr(data, self.field_name)))
 		self.timestamps.append(getattr(data, "timestamp"))
-		#self.truncateexpired()
+		self.truncateexpired()
 
 	# removes the old entries from the buffer
 	def truncateexpired(self):
 		t = time.time()
 		loc = bisect.bisect_left(self.timestamps, t-self.buffer_time)
+		logging.info("Removing from buffer " + str(loc))
 		self.buffer = self.buffer[loc:]
-		self.timestamp = self.buffer[loc:]
+		self.timestamps = self.timestamps[loc:]
 
 	def __str__(self):
                 return ",".join(map(str, self.buffer))
