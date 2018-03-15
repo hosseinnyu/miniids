@@ -18,6 +18,8 @@ class sniffer:
 		
 		# The subscribers get notified as a new packet of the type is arrived
 		def process_pkt(self, packet):
+			## TODO: also consider HTTP response HTTP Response, check https://github.com/invernizzi/scapy-http
+
 			for tt in self.traffic_types:
 				if packet.getlayer(self.layer_mapper[tt]):
 					for s in self.subscribers[tt]:
