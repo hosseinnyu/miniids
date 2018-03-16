@@ -7,7 +7,7 @@ import dashboard
 import consumer
 import sensor
 
-logging.getLogger().setLevel(logging.INFO)
+#logging.getLogger().setLevel(logging.INFO)
 
 class Analyzer:
 
@@ -17,10 +17,9 @@ class Analyzer:
 		self.buffer_time_limit = buffertimelimit #10*1000 ## in ms 
 		self.field_name        = fieldname
 		self.timestamps        = []
-   		self.localbuffer       = []
 
 	def readdata(self):
-		self.localbuffer = self.consumer.getdata(self.field_name)
+		return self.consumer.getdata(self.field_name)
 	
 	def installondashboard(self, globalid):
 		pass
@@ -62,7 +61,7 @@ class FrequencyAnalyzer(Analyzer):
 			if s[_]>m_count:
 				m_count = s[_]
 				m_value = _
-		return (m_value, m_count)		
+		return (len(localbuffer), m_value, m_count)		
 
 	def installondashboard(self, globalid):
                 dashboard.Dashboard.install(globalid, self)
@@ -73,7 +72,7 @@ if __name__ == "__main__":
         hc = consumer.HttpConsumer()
         hc.plugto(s)
 	
-	fa = FrequencyAnalyzer( "HTTP_URL_FREQUENCY", "hostname", 2)
+	fa = FrequencyAnalyzer( "HTTP_URL_FREQUENCY", "hostname", 60)
 	fa.plugto(hc)
 
 	hc.start()
