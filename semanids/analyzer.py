@@ -3,6 +3,7 @@ import time
 import bisect
 from operator import itemgetter
 import logging
+import dashboard
 
 class Analyzer:
 
@@ -27,6 +28,12 @@ class Analyzer:
 		logging.info("Removing from buffer " + str(loc))
 		self.buffer = self.buffer[loc:]
 		self.timestamps = self.timestamps[loc:]
+
+	def installondashboard(self, f):
+		dashboard.Dashboard.install(self.global_id, f)
+
+	def getglobalid(self):
+		return self.global_id
 
 	def __str__(self):
                 return ",".join(map(str, self.buffer))
