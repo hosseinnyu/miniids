@@ -3,54 +3,70 @@ import logging
 import collections
 import time
 import analyzer
+import bisect
+from   operator import itemgetter
 
-#logging.getLogger().setLevel(logging.INFO)
 
 HTTPPacket = collections.namedtuple('HTTPPacket', 'hostname, path, method, dport, sport, src, dst, timestamp')
 
-class Consumer:
-	def __init__(self):
-		pass
-	def plug(self):
+class Consumer(object):
+	def __init__(self, buffertimelimit):
+		self.sensor        = None
+                self.buffer        = []
+                self.buffer_time_limit   = buffertimelimit
+                self.timestamps    = []
+
+	def getdata():
 		pass
 
 class HttpConsumer(Consumer):
 	
-	def __init__(self):
-		self.sensor = sensor.Sensor()
-		self.plugged = collections.defaultdict(list)
-		self.analyzers = []
-		self.analyzer_mapper = {"FREQUENCY": analyzer.FrequencyAnalyzer}
-		self.dashboard_mapper = {"HTTP_URL_FREQUENCY": "getmostfrequent"}
+	def __init__(self, buffertimelimit=10):
+		super(HttpConsumer, self).__init__(buffertimelimit)
 
-	def plugto(self):
-		self.sensor.plug('HTTP', self)
-	
+	def plugto(self, sensor):
+                self.sensor = sensor
+		self.sensor.plugin('HTTP', self)
+
+	def getdata(self, fieldname):
+		self.truncateexpired()
+		tempbuffer = []
+		for f in self.buffer:
+			fields = fieldname if isinstance(fieldname, list) else [fieldname]
+			v = ",".join([getattr(f, _) for _ in fields])
+			tempbuffer.append((getattr(f, "timestamp"),v))
+		return tempbuffer
+
 	def process(self, httppacket):
 		return HTTPPacket(httppacket.Host, httppacket.Path, httppacket.Method, httppacket.dport, httppacket.sport, httppacket.src, httppacket.dst, time.time())
 	
-	def plug(self, analyzer_type, globalid, target_field, buffer_time_limit):
-		a = self.analyzer_mapper[analyzer_type]
-		inst = a(globalid, target_field, buffer_time_limit)
-		inst.installondashboard(getattr(inst, self.dashboard_mapper[inst.getglobalid()]))
-		self.analyzers.append(inst)
-		
-			
-	def notify(self, httppacket):
-		stp = self.process(httppacket)
+	# removes the old entries from the buffer
+        def truncateexpired(self):
+                t = time.time()
+                loc = bisect.bisect_left(self.timestamps, t-self.buffer_time_limit)
+                logging.info("Removing from buffer " + str(loc))
+                self.buffer = self.buffer[loc:]
+                self.timestamps = self.timestamps[loc:]
 
-		for s in self.subscribers:
-			s.notify(stp)
-		
-		for a in self.analyzers:
-			a.appendentry(stp)
+	def addtobuffer(self, packet):
+                logging.info("Adding to buffer")
+                p = self.process(packet)
+		self.buffer.append(p)
+                self.timestamps.append(getattr(p, "timestamp"))
+		self.truncateexpired()
+	
+	
+	def notify(self, httppacket):
+		self.addtobuffer(httppacket)
+		pass
 
 	def start(self):
 		self.sensor.start()
 
 if __name__=="__main__":
+	s = sensor.Sensor()
 	hc = HttpConsumer()
-	hc.subscribe()
-	hc.add_analyzer("FREQUENCY", "HTTP_URL_FREQUENCY", "hostname", 10)
+	hc.plugto(s)
+	#hc.subscribe()
+	#hc.add_analyzer("FREQUENCY", "HTTP_URL_FREQUENCY", "hostname", 10)
 	hc.start()
-		

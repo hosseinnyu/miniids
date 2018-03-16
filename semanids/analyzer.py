@@ -4,55 +4,56 @@ import bisect
 from operator import itemgetter
 import logging
 import dashboard
+import consumer
+import sensor
+
+logging.getLogger().setLevel(logging.INFO)
 
 class Analyzer:
 
-	def __init__(self, globalid, field_name, buffer_time_limit):
-		self.global_id =  globalid
-		self.buffer    = []
-		self.buffer_time = buffer_time_limit#10*1000 ## in ms 
-		self.field_name = field_name
-		self.timestamps = []
+	def __init__(self, consumer, fieldname, buffertimelimit):
+		self.consumer          = consumer
+		self.buffer            = []
+		self.buffer_time_limit = buffertimelimit #10*1000 ## in ms 
+		self.field_name        = fieldname
+		self.timestamps        = []
+   		self.localbuffer       = []
 
-	# adds an entry to the buffer
-	def appendentry(self, data):
-		logging.info("Adding to buffer")
-		self.buffer.append((getattr(data, "timestamp"),getattr(data, self.field_name)))
-		self.timestamps.append(getattr(data, "timestamp"))
-		self.truncateexpired()
-
-	# removes the old entries from the buffer
-	def truncateexpired(self):
-		t = time.time()
-		loc = bisect.bisect_left(self.timestamps, t-self.buffer_time)
-		logging.info("Removing from buffer " + str(loc))
-		self.buffer = self.buffer[loc:]
-		self.timestamps = self.timestamps[loc:]
-
-	def installondashboard(self, f):
-		dashboard.Dashboard.install(self.global_id, f)
+	def readdata(self):
+		self.localbuffer = self.consumer.getdata(self.field_name)
+	
+	def installondashboard(self, globalid):
+		pass
 
 	def getglobalid(self):
 		return self.global_id
+	
+	def plugto(self, consumer):
+		self.consumer = consumer
 
+	def getanalysis():
+		pass
+	
 	def __str__(self):
                 return ",".join(map(str, self.buffer))
 
-
 class FrequencyAnalyzer(Analyzer):
-	def __init__(self, globalid, fieldname, buffer_time_limit):
-		Analyzer.__init__(self, globalid, fieldname, buffer_time_limit)
-	
+	def __init__(self, globalid, fieldname, buffertimelimit):
+		Analyzer.__init__(self, globalid, fieldname, buffertimelimit)
+		self.installondashboard(globalid)
+
 	# gives the number of elements in the buffer
 	def getcount(self):
 		return len(self.buffer)
 	
 	# gives the most frequent item and number of occurances
-	def getmostfrequent(self):
-		if len(self.buffer)==0:
-			return None
+	def getanalysis(self):
+		localbuffer = self.readdata()
 
-		s = [_[1] for _ in self.buffer]
+		if localbuffer == None:
+			return None		
+
+		s = [_[1] for _ in localbuffer]
 		s = collections.Counter(s)
 		
 		m_value = 0
@@ -61,20 +62,21 @@ class FrequencyAnalyzer(Analyzer):
 			if s[_]>m_count:
 				m_count = s[_]
 				m_value = _
-		return (m_value, m_count)			
-		
-	
+		return (m_value, m_count)		
 
+	def installondashboard(self, globalid):
+                dashboard.Dashboard.install(globalid, self)
+	
+		
 if __name__ == "__main__":
-	T = collections.namedtuple('T', 'timestamp, p')
-	f = FrequencyAnalyzer("HTTP_URL_FREQ", "p", 10*1000)
-	f.appendentry(T(1, "b"))
-	f.appendentry(T(2, "c"))
-	f.appendentry(T(3, "c"))
-	f.appendentry(T(4, "b"))
-	f.appendentry(T(4, "b"))
-	f.appendentry(T(4, "b"))
-	#f.truncateexpired()
-	#f.appendentry(a"d")
-	print f.getcount()
-	print f.getmostfrequent()
+	s  = sensor.Sensor()
+        hc = consumer.HttpConsumer()
+        hc.plugto(s)
+	
+	fa = FrequencyAnalyzer( "HTTP_URL_FREQUENCY", "hostname", 2)
+	fa.plugto(hc)
+
+	hc.start()
+	
+	
+	print fa.getanalysis()

@@ -12,12 +12,12 @@ class Sensor:
 	class __sensor:
 		
 		# Upper layers can plug to sensor and consume datae
-		def plug(self, traffic_type, handler):
+		def plugin(self, traffic_type, handler):
 			self.plugged[traffic_type].append(handler)
 			self.traffic_types.add(traffic_type)
 		
 		# The subscribers get notified as a new packet of the type is arrived
-		def process_pkt(self, packet):
+		def notify(self, packet):
 			## TODO: also consider HTTP response HTTP Response, check https://github.com/invernizzi/scapy-http
 
 			for tt in self.traffic_types:
@@ -26,7 +26,7 @@ class Sensor:
 						s.notify(packet)
 		
 		def listen(self):
-			sniff(filter="tcp", iface="enp3s0", prn=self.process_pkt)
+			sniff(filter="tcp", iface="enp3s0", prn=self.notify)
 
 		# This need to be called to start the sensor
 		def start(self):
