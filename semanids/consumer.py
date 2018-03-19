@@ -35,7 +35,7 @@ class HttpConsumer(Consumer):
 			fields = fieldname if isinstance(fieldname, list) else [fieldname]
 			v = ",".join([getattr(f, _) for _ in fields])
 			tempbuffer.append((getattr(f, "timestamp"),v))
-		return tempbuffer
+		return (self.timestamps, tempbuffer)
 
 	def process(self, httppacket):
 		return HTTPPacket(httppacket.Host, httppacket.Path, httppacket.Method, httppacket.dport, httppacket.sport, httppacket.src, httppacket.dst, time.time())

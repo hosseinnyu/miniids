@@ -47,10 +47,17 @@ class FrequencyAnalyzer(Analyzer):
 	
 	# gives the most frequent item and number of occurances
 	def getanalysis(self):
-		localbuffer = self.readdata()
-
+		timestamps, localbuffer = self.readdata()
 		if localbuffer == None:
 			return None		
+
+		## removing elements that exceed the buffer
+		t = time.time()
+                loc = bisect.bisect_left(timestamps, t-self.buffer_time_limit)
+                logging.info("Removing from buffer " + str(loc))
+                localbuffer = localbuffer[loc:]
+                timestamps = self.timestamps[loc:]
+
 
 		s = [_[1] for _ in localbuffer]
 		s = collections.Counter(s)

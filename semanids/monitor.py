@@ -17,13 +17,13 @@ class Monitor:
 	def __init__(self):
 		self.consumers = []
 		s  = sensor.Sensor()
-        	hc = consumer.HttpConsumer()
+        	hc = consumer.HttpConsumer(5*60)
         	hc.plugto(s)
 
-        	fa = analyzer.FrequencyAnalyzer( "HTTP_URL_FREQUENCY_10S", "hostname", 10)
+        	fa = analyzer.FrequencyAnalyzer( "HTTP_URL_FREQUENCY_10S", "hostname", 30)
         	fa.plugto(hc)
 
-		fa2 = analyzer.FrequencyAnalyzer( "HTTP_URL_FREQUENCY_2M", "hostname", 10)
+		fa2 = analyzer.FrequencyAnalyzer( "HTTP_URL_FREQUENCY_2M", "hostname", 30)
                 fa2.plugto(hc)
 
 		self.ids = ids.IDS()
@@ -37,11 +37,9 @@ class Monitor:
 		self.terminal.start()
 
 		self.consumers.append(hc)
-                #self.s = sched.scheduler(time.time, time.sleep)
 
 	
 	def notify(self, msg):
-		#print msg.messagetype, msg.message
 		self.terminal.addstr( msg.messagetype, msg.message + " " + str(msg.timestamp))
 
 	def visitids(self):

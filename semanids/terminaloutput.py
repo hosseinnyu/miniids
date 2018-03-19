@@ -30,12 +30,13 @@ class TerminalOutput(object):
 		self.printheader()
 		cr  = 0
 		for s in self.sections:
-			sr = 0
+			sr = 1
 			print ("+++++++++++++++++++++++++%s")%(s.title)
 			for e in reversed(self.buffer[s.id]):
-				if sr>=s.maxheight:
+				if sr>s.maxheight:
 					break
-				print self.buffer[s.id][sr]
+				print sr, e
+				sr += 1
 		
 			
 		threading.Timer(SCREEN_REFRESH_INTERVAL, self.refresh).start()
