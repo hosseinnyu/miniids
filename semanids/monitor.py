@@ -40,7 +40,7 @@ class Monitor:
 
 	
 	def notify(self, msg):
-		self.terminal.addstr( msg.messagetype, msg.message + " " + str(msg.timestamp))
+		self.terminal.addstr( msg.messagetype, msg.message, msg.timestamp)
 
 	def visitids(self):
 		self.ids.check()

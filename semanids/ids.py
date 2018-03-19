@@ -10,6 +10,7 @@ class IDS(object):
 	def __init__(self):
 		self.meters = []
 		self.monitor = None
+		self.alertstate = False		
 
 	def plugto(self, meterglobalid):
 		self.meters.append(meterglobalid)
@@ -27,11 +28,20 @@ class IDS(object):
 			meter_values[s] = dashboard.Dashboard.getcallee(s).getanalysis()
 		
 		## one example rule
-		if ("HTTP_URL_FREQUENCY_2M" in meter_values) and (meter_values["HTTP_URL_FREQUENCY_2M"][0]>3):
-			msg = idsmessage("ALERT", ("High traffic generated an alert - hits %s, triggered at %s")%(meter_values["HTTP_URL_FREQUENCY_2M"][0], time.time()), time.time())
-			self.notify(msg)
+		THREASHOLD = 20
+		
+		if ("HTTP_URL_FREQUENCY_2M" in meter_values):
+			if (meter_values["HTTP_URL_FREQUENCY_2M"][0]>=THREASHOLD) and self.alertstate==False:
+				msg = idsmessage("ALERT", ("High traffic generated an alert - hits %s ")%(meter_values["HTTP_URL_FREQUENCY_2M"][0]), time.time())
+				self.notify(msg)
+				self.alertstate = True
+			if self.alertstate and (meter_values["HTTP_URL_FREQUENCY_2M"][0]<THREASHOLD):
+				msg = idsmessage("ALERT", ("Traffic back to normal - hits %s")%(meter_values["HTTP_URL_FREQUENCY_2M"][0]), time.time())
+				self.notify(msg)
+				self.alertstate = False
 
 		if ("HTTP_URL_FREQUENCY_10S" in meter_values):
-			msg = idsmessage("NOTIFICATION",  str(meter_values["HTTP_URL_FREQUENCY_10S"]), time.time())
-			self.notify(msg)
+			if meter_values["HTTP_URL_FREQUENCY_10S"][0]!=0:
+				msg = idsmessage("NOTIFICATION",  ("Total Req:%s, Most Freq:%s, URL:%s")%(meter_values["HTTP_URL_FREQUENCY_10S"][0], meter_values["HTTP_URL_FREQUENCY_10S"][2], meter_values["HTTP_URL_FREQUENCY_10S"][1]), time.time())
+				self.notify(msg)
 			

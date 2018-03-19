@@ -2,6 +2,7 @@ import time
 import collections
 import os
 import threading
+import datetime
 
 SCREEN_REFRESH_INTERVAL = 2
 
@@ -20,8 +21,8 @@ class TerminalOutput(object):
 	def addsection(self, section):
 		self.sections.append(section)
 	
-	def addstr(self, sectionid, msgline):
-		self.buffer[sectionid].append(msgline)
+	def addstr(self, sectionid, msgline, timestamp):
+		self.buffer[sectionid].append((msgline, timestamp))
 
 	def refresh(self):
 		#return	
@@ -35,7 +36,8 @@ class TerminalOutput(object):
 			for e in reversed(self.buffer[s.id]):
 				if sr>s.maxheight:
 					break
-				print sr, e
+				dt = datetime.datetime.fromtimestamp(int(e[1])).strftime('%Y-%m-%d %H:%M:%S')
+				print sr, e[0], dt
 				sr += 1
 		
 			
