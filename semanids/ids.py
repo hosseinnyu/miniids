@@ -1,15 +1,26 @@
 import time
 import dashboard
 import sys
+import collections
+
+idsmessage = collections.namedtuple("idsmessage", "messagetype, message, timestamp")
 
 class IDS(object):
 	
 	def __init__(self):
 		self.meters = []
+		self.monitor = None
 
 	def plugto(self, meterglobalid):
 		self.meters.append(meterglobalid)
-
+	
+	def plug(self, monitor):
+		self.monitor = monitor
+	
+	def notify(self, msg):
+		if self.monitor!=None:
+			self.monitor.notify(msg)
+	
 	def check(self):
 		meter_values = {}
 		for s in self.meters:
@@ -17,11 +28,10 @@ class IDS(object):
 		
 		## one example rule
 		if ("HTTP_URL_FREQUENCY_2M" in meter_values) and (meter_values["HTTP_URL_FREQUENCY_2M"][0]>3):
-			#s = ("High traffic generated an alert - hits %s, triggered at %s")%(meter_values["HTTP_URL_FREQUENCY_2M"][0], time.time())
-			#sys.stdout.write("Alert: : %s%%   \r" % (s) )
-			#sys.stdout.flush()
-			#print ("High traffic generated an alert - hits %s, triggered at %s")%(meter_values["HTTP_URL_FREQUENCY_2M"][0], time.time())
+			msg = idsmessage("ALERT", ("High traffic generated an alert - hits %s, triggered at %s")%(meter_values["HTTP_URL_FREQUENCY_2M"][0], time.time()), time.time())
+			self.notify(msg)
 
 		if ("HTTP_URL_FREQUENCY_10S" in meter_values):
-			print meter_values["HTTP_URL_FREQUENCY_10S"]
+			msg = idsmessage("NOTIFICATION",  str(meter_values["HTTP_URL_FREQUENCY_10S"]), time.time())
+			self.notify(msg)
 			
