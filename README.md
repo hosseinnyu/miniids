@@ -27,15 +27,17 @@ The architecture of the SemanIDS is layered based. Higher leyers plug (equal to 
 
 * Analyzer: Analyzers do statistical analysis on the packets. An analyzer plugs to a consumer and is able to read the buffers. The analysis can be a simple word-count to more complicated anlaysis. 
 
-* Dashboard: each analysis function over a target data of interest installs itself into a dashboard of "meters" and can be accessed by ids layer. I call each items in the dashboard a meter (similar to meters in real word).
+* Dashboard: Analyzers install themselves into a dashboard and announce themselves as a "meter" each. The meters are usually accessed by IDS layer. These meters are basically the data points that IDS observes from the network behaviors.
 
-* IDS: is the layer where the rules are checked against the meters and alerts or notifications are generated. For example, if count of the recently visited websites in above a given threshold, then this can create an alert.
+* IDS: IDS layer includes the logic and rules of creating alerts based on the observed network behaviors. At the moment, rules are hard-coded into this module. Ideally, there will be a rule definition language that describes when to generate an alert. IDS pulls the data points from the dashboard, that in turned is bound to the analyzers. The IDS layer notfies a subscriber when an alert or notifcation is created.
 
-* Monitor: is basically the boot engine where the configuration of a running IDS is defined, objects are created, and layers are created and plugged on top of each other.
+* Monitor: Is the initialization and run engine where the layers are created and configured, and layers are plugged on top of each other. 
 
-* Terminaloutput: is a class that helps to have a decent output system with several sections (in this case on for alerts and one for notification), that makes the monitoring of the system very easy.
+* Terminaloutput: Is bascially the UI class that shows notifications and alerts. It constantly refreshes the screens and shows different sections accordingly.
 
-In order to run this on your machine, you need to modify the file sensor, line 29, and put the name of the interface you wan to sniff. Then, run:
+## How to run?
+To run the IDS on your machine, you need to first modify the sensor.py file and put the name of the interface on your machine to sniff. Then, run:
+
 sudo python monitor.py
 
 
