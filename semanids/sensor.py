@@ -1,14 +1,18 @@
-"""
-	This module senses the network traffic and notifies the plugged objects.
-"""
+## @package sensor
+#  This module senses the network traffic and notifies the plugged objects.
+
 from scapy.all import *    #import scapy module to python
 from collections import defaultdict
 from scapy.layers import http
 from scapy.utils import *
 import logging
 
-# Singleton class for sniffing the packers and dispatching
+## Documentation for Sensor
+#  This is a singleton class for sniffing the packers and dispatching the events when a new packet arrives
 class Sensor:
+	
+	## Documentation for __sensor
+	#  This is a private class that can only be accessed from within Sensor. The goal is to make Sensor a singleton class
 	class __sensor:
 		
 		# Upper layers can plug to sensor and consume datae
