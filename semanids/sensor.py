@@ -15,7 +15,7 @@ class Sensor:
 	#  This is a private class that can only be accessed from within Sensor. The goal is to make Sensor a singleton class
 	class __sensor:
 		
-		# Upper layers can plug to sensor and consume datae
+		# Upper layers can plug to sensor and consume data
 		def plugin(self, traffic_type, handler):
 			self.plugged[traffic_type].append(handler)
 			self.traffic_types.add(traffic_type)
@@ -29,30 +29,35 @@ class Sensor:
 					for s in self.plugged[tt]:
 						s.notify(packet)
 		
+		## Initializes a sniffer to listen to a specified network interface
 		def listen(self):
 			sniff(filter="tcp", iface="enp3s0", prn=self.notify)
 
-		# This need to be called to start the sensor
+		## Call start so start listening to the network traffic 
 		def start(self):
 			self.listen()
-
+		
+		## The class initializer
 		def __init__(self):
 			self.layer_mapper = {"HTTP": http.HTTPRequest}
 			self.plugged = defaultdict(list)
         		self.traffic_types = set()
 	
-	## enforcing singleton
+	## a variable that enforces singleton. If @var instance is null, no instance of the class is initialzed.
 	instance = None
 	
+	## A method initializing the singleton class
 	def __init__(self):
 		logging.info("Initializing HTTP Sensor")
 		if not Sensor.instance:
 			Sensor.instance = Sensor.__sensor()
 	
+	## A method that bypass the function calls to the private inner class
 	def __getattr__(self, name):
 		return getattr(self.instance, name)
 
 
+## run this for an independent execution of this class 
 if __name__ == "__main__":
 	s = Sensor()
 	s.start()
