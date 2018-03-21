@@ -1,3 +1,6 @@
+## @package consumer
+#  This package sits on top of the sensor class and extracts and buffers the packets observed on the network interface
+
 import sensor
 import logging
 import collections
@@ -6,10 +9,19 @@ import analyzer
 import bisect
 from   operator import itemgetter
 
-
+## @var HTTPPacket is a namestuple construct to make it easy to access fields
 HTTPPacket = collections.namedtuple('HTTPPacket', 'hostname, path, method, dport, sport, src, dst, timestamp')
 
+## @class consumer supper class for consumers
+#  This calss has buffers that stores the packers
 class Consumer(object):
+	
+	## @method Initializes the class
+	#  @var sensor: keeps the reference to the sensor that reads the packets
+	#  @var buffer: keeps and array of packets after the interesting fields are extracted
+	#  @var buffer_time_limit: defines age in which the packets whould be discarded (in seconds)
+	#  @var timestamps: an array that keeps the timestamps of the recieved packets. The major use is to identify old packets
+	
 	def __init__(self, buffertimelimit):
 		self.sensor        = None
                 self.buffer        = []
