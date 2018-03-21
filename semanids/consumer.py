@@ -30,16 +30,21 @@ class Consumer(object):
 
 	def getdata():
 		pass
-
+## @class HttpConsumer
+#  This is a subclass of Consumer class, that is able to dismantle the elements of HttpPackets
 class HttpConsumer(Consumer):
 	
+	## Initializes this class and the super class
 	def __init__(self, buffertimelimit=10):
 		super(HttpConsumer, self).__init__(buffertimelimit)
 
+	## plugs this class to a sensor and subscribes for notifictions as a packet is recieved
 	def plugto(self, sensor):
                 self.sensor = sensor
 		self.sensor.plugin('HTTP', self)
-
+	
+	## This method is called by Analyzer class to compile and return the of interest
+	#  @param fieldname indicate the field(s) of interests in a packet
 	def getdata(self, fieldname):
 		self.truncateexpired()
 		tempbuffer = []
@@ -49,17 +54,20 @@ class HttpConsumer(Consumer):
 			tempbuffer.append((getattr(f, "timestamp"),v))
 		return (self.timestamps, tempbuffer)
 
+	## This method processes an incomming packet and shapes it to the named tuples
 	def process(self, httppacket):
 		return HTTPPacket(httppacket.Host, httppacket.Path, httppacket.Method, httppacket.dport, httppacket.sport, httppacket.src, httppacket.dst, time.time())
 	
-	# removes the old entries from the buffer
+	## A method that removes the old entries from the buffer.
+	#  All entries older than currenttime-buffer_time_limit will be removed
         def truncateexpired(self):
                 t = time.time()
                 loc = bisect.bisect_left(self.timestamps, t-self.buffer_time_limit)
                 logging.info("Removing from buffer " + str(loc))
                 self.buffer = self.buffer[loc:]
                 self.timestamps = self.timestamps[loc:]
-
+	
+	## A method to add entries to the consumers buffer
 	def addtobuffer(self, packet):
                 logging.info("Adding to buffer")
                 p = self.process(packet)
@@ -67,11 +75,12 @@ class HttpConsumer(Consumer):
                 self.timestamps.append(getattr(p, "timestamp"))
 		self.truncateexpired()
 	
-	
+	## A method which is called by the sensor whenever a new packet is arrived
 	def notify(self, httppacket):
 		self.addtobuffer(httppacket)
 		pass
-
+	
+	## starts the sensor
 	def start(self):
 		self.sensor.start()
 
