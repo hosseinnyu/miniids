@@ -1,3 +1,5 @@
+## @package analyzer
+#  This package includes analyzer classes
 import collections
 import time
 import bisect
@@ -9,8 +11,12 @@ import sensor
 
 #logging.getLogger().setLevel(logging.INFO)
 
+## @class analyzer
+#  This is a superclass that includes abstract methods to setup an analyzer and do analysis on data
+
 class Analyzer:
 
+	## @method initializes the class
 	def __init__(self, consumer, fieldname, buffertimelimit):
 		self.consumer          = consumer
 		self.buffer            = []
@@ -18,9 +24,11 @@ class Analyzer:
 		self.field_name        = fieldname
 		self.timestamps        = []
 
+	## @method this method reads the data from the network consumer 
 	def readdata(self):
 		return self.consumer.getdata(self.field_name)
 	
+	## @method this method installs the analyzer on to a dashboard that makes i
 	def installondashboard(self, globalid):
 		pass
 
