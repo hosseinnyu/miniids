@@ -16,7 +16,18 @@ class Sensor:
 	class __sensor:
 		
 		# Upper layers can plug to sensor and consume data
-		def plugin(self, traffic_type, handler):
+		def plugin(self, traffic_type, handler=None):
+
+			if handler is None:
+				raise ValueError("The handler can't be None.")
+			
+			notify_func = getattr(handler, "notify", None)
+			if not callable(notify_func):
+    				raise ValueError("The handler object must have a notify method.")
+
+			if not traffic_type in self.layer_mapper:
+				raise ValueError(("The traffic type %s is not currently supported.")%(traffic_type))
+
 			self.plugged[traffic_type].append(handler)
 			self.traffic_types.add(traffic_type)
 		
