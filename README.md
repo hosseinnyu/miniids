@@ -1,6 +1,6 @@
 # Intro
 
-This is a simple but elegant IDS. For now, it only works with HTTP traffic.
+This is a minimal Intrusion Detection System (IDS) designed for the education purposes. The system follows the common layered architecture, and therefore is easy to modify and add modules.  
 
 # Architecture
 
