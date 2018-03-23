@@ -1,10 +1,10 @@
 # Intro
 
-This is a minimal Intrusion Detection System (IDS) designed for the education purposes. The system follows the common layered architecture, and therefore is easy to modify and add modules.  
+This is a Minimal Intrusion Detection System (MiniIDS) designed for the education purposes. The system follows the common layered architecture, and therefore is easy to modify and add modules.  
 
 # Architecture
 
-The architecture of the SemanIDS is layered based. Higher leyers plug (equal to the concept of subscribe) to a lower layer, and lower layers notify higher levels of the events.
+The architecture of the MiniIDS is layered based. Higher leyers plug (equal to the concept of subscribe) to a lower layer, and lower layers notify higher levels of the events.
 
 
 |-----------------------------------------------------------------------------------|  
