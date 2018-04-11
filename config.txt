@@ -1,0 +1,2 @@
+[sensorconfig]
+Interface = enp3s0
